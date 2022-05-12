@@ -1,50 +1,52 @@
+import { openDatabase, SQLiteDatabase } from "react-native-sqlite-storage";
 import { Country } from "../../models/Country";
 import { RestTypes } from "../../models/RestTypes";
+import * as SQLite from "expo-sqlite";
+import { ResultSet } from "expo-sqlite";
+import { CountryRepository, ICountryRepository } from "../repository";
 
-const countries: Array<Country> = [
-  {
-    id: 1,
-    name: "Russia",
-    capital: "Moscow",
-    continent: "Eurasia",
-    typesOfRest: RestTypes.WinterHoliday,
-  },
-  {
-    id: 2,
-    name: "China",
-    capital: "Pekin",
-    continent: "Eurasia",
-    typesOfRest: RestTypes.Camping,
-  },
-];
+const db = SQLite.openDatabase("countries_db");
+const repository = new CountryRepository(db);
+repository.init();
+
 export type CountyState = {
-  countries: Country[];
+    countries: Country[];
 };
-const inititalState: CountyState = {
-  countries: countries,
+const initialState: CountyState = {
+    countries: repository.getAll()[1]!,
 };
 export type CountryAction = {
-  type: ActionType;
-  payload: Country;
+    type: ActionType;
+    payload: Country;
 };
 export enum ActionType {
-  CHANGE_COUNTY = "CHANGE_COUNTRY",
+    CHANGE_COUNTRY = "CHANGE_COUNTRY",
+    CREATE_COUNTRY = "CREATE_COUNTRY",
 }
-
 export const CountryReducer = (
-  state = inititalState,
-  action: CountryAction
+    state = initialState,
+    action: CountryAction
 ): CountyState => {
-  switch (action.type) {
-    case ActionType.CHANGE_COUNTY:
-      return {
-        ...state,
-        countries: [
-          ...state.countries.filter((x) => x.id != action.payload.id),
-          action.payload,
-        ],
-      };
-    default:
-      return state;
-  }
+    switch (action.type) {
+        case ActionType.CHANGE_COUNTRY:
+            return {
+                ...state,
+                countries: [
+                    ...state.countries.filter((x) => x.id != action.payload.id),
+                    action.payload,
+                ],
+            };
+        case ActionType.CREATE_COUNTRY:
+            const country = action.payload;
+            const err = repository.add(country);
+            if (err) {
+                console.log(err);
+            }
+            return {
+                ...state,
+                countries: repository.getAll()[1]!,
+            };
+        default:
+            return state;
+    }
 };
