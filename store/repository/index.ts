@@ -9,7 +9,7 @@ export interface ICountryRepository {
     db: SQLite.WebSQLDatabase;
     add(country: Country): err;
     getById(id: number): [err, Country | null];
-    getAll(): [err, Country[] | null];
+    getAll(): Country[];
     delete(id: number): err;
     update(country: Country): [err, Country | null];
     init(): err;
@@ -71,16 +71,12 @@ export class CountryRepository implements ICountryRepository {
         }
         return [null, country];
     }
-    getAll(): [err, Country[] | null] {
-        let error: err = null;
+    getAll(): Country[] {
         const countries: Country[] = [];
         this.db.exec(
             [{ sql: "SELECT * FROM countries", args: [] }],
             false,
             (err, res) => {
-                if (err) {
-                    error = err;
-                }
                 if (res) {
                     const result = res[0] as SQLite.ResultSet;
 
@@ -96,10 +92,8 @@ export class CountryRepository implements ICountryRepository {
                 }
             }
         );
-        if (error) {
-            return [error, null];
-        }
-        return [null, countries];
+
+        return countries;
     }
     delete(id: number): err {
         throw new Error("Method not implemented.");
@@ -133,3 +127,8 @@ export class CountryRepository implements ICountryRepository {
         return error;
     }
 }
+const db = SQLite.openDatabase("countries_db");
+
+const repository = new CountryRepository(db);
+repository.init();
+export default repository;

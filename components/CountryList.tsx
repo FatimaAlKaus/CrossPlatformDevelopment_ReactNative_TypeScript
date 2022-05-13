@@ -18,8 +18,8 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 
-import { Button, Dialog, Icon } from "react-native-elements";
-import { connect, useDispatch, useSelector } from "react-redux";
+import { Button, Dialog } from "react-native-elements";
+import { useDispatch, useSelector } from "react-redux";
 import { useTypedSelector } from "../hooks/useTypedSelector";
 import { Country } from "../models/Country";
 import {} from "react-native/";
@@ -27,6 +27,7 @@ import { RestTypes } from "../models/RestTypes";
 import { styles } from "./CountryList.styles";
 import { CountryPage } from "./CountryPage";
 import { ActionType, CountryAction } from "../store/reducer/CountryReducter";
+import { useDataCtx } from "../hooks";
 
 export const CountryList: React.FC = () => {
     const [selectedCountry, setCountry] = useState<Country>();
@@ -40,20 +41,17 @@ export const CountryList: React.FC = () => {
         name: "",
         capital: "",
         continent: "",
-        typesOfRest: RestTypes.ActiveHoliday,
+        typesOfRest: RestTypes[0],
         id: 0,
     });
-    const dispatch = useDispatch();
-    const addCountry = (dispatch: Dispatch<CountryAction>) => {
-        dispatch({
-            type: ActionType.CREATE_COUNTRY,
-            payload: {
-                id: createdCountry.id,
-                name: createdCountry.name,
-                capital: createdCountry.capital,
-                continent: createdCountry.continent,
-                typesOfRest: createdCountry.typesOfRest,
-            },
+    const addCountry = () => {
+        ctx?.addCountry(createdCountry);
+        setCreatedCountry({
+            name: "",
+            capital: "",
+            continent: "",
+            typesOfRest: RestTypes[0],
+            id: 0,
         });
     };
     const onSave = () => {
@@ -67,14 +65,14 @@ export const CountryList: React.FC = () => {
             createdCountry.continent &&
             createdCountry.name
         ) {
-            addCountry(dispatch);
+            addCountry();
             setDialogIsOpen(false);
         }
     };
 
     const [dialogIsOpen, setDialogIsOpen] = useState<boolean>(false);
 
-    const countries = useTypedSelector((selector) => selector.countries);
+    const ctx = useDataCtx();
 
     return (
         <View style={styles.container}>
@@ -84,30 +82,34 @@ export const CountryList: React.FC = () => {
                         showsVerticalScrollIndicator={false}
                         style={{ marginTop: 10 }}
                     >
-                        {countries?.map((country) => (
-                            <Presumable
-                                onPress={() => {
-                                    setCountry(
-                                        countries.find(
-                                            (x) => x.id == country.id
-                                        )
-                                    );
-                                }}
-                                key={country.id}
-                                style={({ pressed }) => [
-                                    {
-                                        backgroundColor: pressed
-                                            ? "rgb(210, 230, 255)"
-                                            : "white",
-                                    },
-                                    styles.pressableCountry,
-                                ]}
-                            >
-                                <Text style={styles.countryNameText}>
-                                    {country.name}
-                                </Text>
-                            </Presumable>
-                        ))}
+                        {ctx?.countries?.map((country) => {
+                            return (
+                                <Presumable
+                                    onPress={() => {
+                                        const ctr: Country | undefined =
+                                            ctx?.countries?.find(
+                                                (x) => x.id == country.id
+                                            );
+                                        console.log("onPress");
+                                        console.log(ctr);
+                                        setCountry(ctr);
+                                    }}
+                                    key={country.id}
+                                    style={({ pressed }) => [
+                                        {
+                                            backgroundColor: pressed
+                                                ? "rgb(210, 230, 255)"
+                                                : "white",
+                                        },
+                                        styles.pressableCountry,
+                                    ]}
+                                >
+                                    <Text style={styles.countryNameText}>
+                                        {country.name}
+                                    </Text>
+                                </Presumable>
+                            );
+                        })}
                     </ScrollView>
                     <Button
                         buttonStyle={styles.addButton}
@@ -175,28 +177,28 @@ export const CountryList: React.FC = () => {
                             selectedValue={createdCountry.typesOfRest}
                         >
                             <Picker.Item
-                                label={RestTypes.ActiveHoliday}
-                                value={RestTypes.ActiveHoliday}
+                                label={RestTypes[0]}
+                                value={RestTypes[0]}
                             ></Picker.Item>
                             <Picker.Item
-                                label={RestTypes.Camping}
-                                value={RestTypes.Camping}
+                                label={RestTypes[1]}
+                                value={RestTypes[1]}
                             ></Picker.Item>
                             <Picker.Item
-                                label={RestTypes.PackageHoliday}
-                                value={RestTypes.PackageHoliday}
+                                label={RestTypes[2]}
+                                value={RestTypes[2]}
                             ></Picker.Item>
                             <Picker.Item
-                                label={RestTypes.SummerHoliday}
-                                value={RestTypes.SummerHoliday}
+                                label={RestTypes[3]}
+                                value={RestTypes[3]}
                             ></Picker.Item>
                             <Picker.Item
-                                label={RestTypes.WalkingHoliday}
-                                value={RestTypes.WalkingHoliday}
+                                label={RestTypes[4]}
+                                value={RestTypes[4]}
                             ></Picker.Item>
                             <Picker.Item
-                                label={RestTypes.WinterHoliday}
-                                value={RestTypes.WinterHoliday}
+                                label={RestTypes[5]}
+                                value={RestTypes[5]}
                             ></Picker.Item>
                         </Picker>
                     </View>

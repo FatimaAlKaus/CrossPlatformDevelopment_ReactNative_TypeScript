@@ -7,6 +7,7 @@ import {
 } from "./store/reducer/CountryReducter";
 import { createStore } from "redux";
 import { useEffect } from "react";
+import { DataProvider } from "./components/DataProvider";
 
 const rootReducer = CountryReducer;
 const store = createStore(rootReducer);
@@ -15,8 +16,8 @@ export type RootState = ReturnType<typeof rootReducer>;
 export default function App() {
     useEffect(() => {}, []);
     return (
-        <Provider store={store}>
+        <DataProvider>
             <CountryList />
-        </Provider>
+        </DataProvider>
     );
 }
